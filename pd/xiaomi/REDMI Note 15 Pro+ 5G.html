@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title></title>
+
+	 <style>
+
+		html, body {
+  overflow-x: hidden; /* Hide both vertical and horizontal scrollbars */
+	margin: 0px;
+			 padding: 0px;
+}
+	.pd-container{
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1vw;
+    border-radius: 8px;
+    padding: 16px 16px;
+    display: inline-grid;
+    align-items: self-start;
+	}
+	.pd-1 .pd-2 .pd-3{
+	width: fit-content;
+	}
+	.img-container{
+	width: fit-content;
+    height: fit-content;
+	}
+	img {
+    width: 450px;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 16px;
+	}
+	.header-title{
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: clamp(24px, 3vw, 36px);
+	}
+	.header-description{
+	font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: clamp(14px, 1.3vw, 18px) !important;
+    line-height: 1.3em;
+	}
+
+	@media (min-width: 576px) and (max-width: 767px) {
+		.pd-container{
+	    grid-template-columns: repeat(1, 1fr);
+	    gap: 1vw;
+	    border-radius: 8px;
+	    padding: 16px 16px;
+	    display: inline-grid;
+	    align-items: self-start;
+		}
+		img {
+	    width: 650px;
+	    height: 400px;
+	    object-fit: cover;
+	    border-radius: 16px;
+		}
+}
+
+  @media screen and (max-width: 575px) {
+		.pd-container{
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1vw;
+    border-radius: 8px;
+    display: inline-grid;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    justify-items: center;
+    text-align: center;
+		}
+
+	  .pd-1, .pd-2, .pd-3{
+		      display: inline-grid !important;
+    justify-items: center !important;
+	  }
+
+	  	img {
+	    width: 300px;
+	    height: 300px;
+	    object-fit: cover;
+		border-radius: 16px;
+		}
+	  	.header-description{
+	font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: clamp(14px, 1.3vw, 18px) !important;
+    line-height: 1.3em;
+	}
+
+  }
+		 
+	
+  </style>
+</head>
+<body>
+
+	<div class="pd-container"> 
+		<div class="pd-1">
+			<div class="img-container">
+				<img src="https://i02.appmifile.com/mi-com-product/fly-birds/redmi-note-15-pro-plus-5g/pc/b08c6a79d7fbda4c37c187e6102f7143.jpg?f=webp">
+			</div>
+			<div class="description-container">
+				<p class="header-title">Massive 6500mAh battery</h1>
+				<p class="header-description">With a 10% silicon-carbon content, REDMI Note 15 Pro+ 5G's battery capacity is significantly boosted, delivering an unprecedented, ultra-long battery life experience.</p>
+			</div>
+		</div>
+				<div class="pd-2">
+			<div class="img-container">
+				<img src="https://i02.appmifile.com/mi-com-product/fly-birds/redmi-note-15-pro-plus-5g/pc/72361fbec393c04e4ed1c13899ce1c5e.jpg?f=webp">
+			</div>
+			<div class="description-container">
+				<p class="header-title">Ultra-durable smartphone</h1>
+				<p class="header-description">SGS-certified for full-device high-strength protection against drops, bends and crushing pressure.</p>
+			</div>
+		</div>
+				<div class="pd-3">
+			<div class="img-container">
+				<img src="https://i02.appmifile.com/mi-com-product/fly-birds/redmi-note-15-pro-plus-5g/pc/a7a3d1b3ed888788e778ebd8f5ac9b1f.jpg?f=webp">
+			</div>
+			<div class="description-container">
+				<p class="header-title">Corning® Gorilla® Glass Victus® 2</h1>
+				<p class="header-description">With ultra-high-strength glass, the screen is impact and scratch-resistant, ensuring long-term durability and reliability.</p>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
