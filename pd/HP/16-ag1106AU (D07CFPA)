@@ -1,1 +1,43 @@
 
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title></title>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+<body>
+
+	<div class="pd-container"> 
+		<div class="pd-1">
+			<div class="img-container">
+				<img src="https://hp.widen.net/content/lxv2iwjmxi/png/lxv2iwjmxi.png?w=800&h=600&dpi=72&color=ffffff00">
+			</div>
+			<div class="description-container">
+				<p class="header-title">AI power to multitask</h1>
+				<p class="header-description">Multitask easily with this Copilot+ PC, AMD Ryzen™ AI 300 Series Processor 5 and a collection of solutions.</p>
+			</div>
+		</div>
+				<div class="pd-2">
+			<div class="img-container">
+				<img src="https://hp.widen.net/content/4qqyrjxr65/png/4qqyrjxr65.png?w=800&h=600&dpi=72&color=ffffff00">
+			</div>
+			<div class="description-container">
+				<p class="header-title">Visuals to lose yourself in</h1>
+				<p class="header-description">Enjoy a visual adventure with AMD Radeon 800M Graphics and display with less bezel and true-to-life visuals.</p>
+			</div>
+		</div>
+				<div class="pd-3">
+			<div class="img-container">
+				<img src="https://hp.widen.net/content/eigj2dfnoc/png/eigj2dfnoc.png?w=800&h=600&dpi=72&color=ffffff00">
+			</div>
+			<div class="description-container">
+				<p class="header-title">Seamlessly connect on the go</h1>
+				<p class="header-description">Showcase your ideas from anywhere with the FHD IR camera 6 with manual shutter for added privacy.</p>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
