@@ -59,11 +59,12 @@
 	    object-fit: cover;
 	    border-radius: 16px;
 		}
-		video {
-	    width: stretch;
-	    height: 400px;
+	  	video {
+	    width: 100vw;
+	    height: 450px;
 	    object-fit: cover;
-	    border-radius: 16px;
+	    border-radius: 16px;	
+		aspect-ratio: 16 / 9;
 		}
 }
 
@@ -93,12 +94,12 @@
 		border-radius: 16px;
 		}
 	  	video {
-    width: 100vw;
-    height: 350px;
-    object-fit: cover;
-    border-radius: 16px;
-			aspect-ratio: 16 / 9;
-	}
+	    width: 100vw;
+	    height: 300px;
+	    object-fit: cover;
+	    border-radius: 16px;	
+		aspect-ratio: 16 / 9;
+		}
 	  	.header-description{
 	font-family: 'Inter', sans-serif;
     font-weight: 400;
@@ -107,6 +108,7 @@
 	}
 
   }
+
 
 
 
