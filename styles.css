@@ -97,6 +97,7 @@
     height: 350px;
     object-fit: cover;
     border-radius: 16px;
+			aspect-ratio: 16 / 9;
 	}
 	  	.header-description{
 	font-family: 'Inter', sans-serif;
@@ -106,6 +107,7 @@
 	}
 
   }
+
 
 
 
