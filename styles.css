@@ -92,7 +92,7 @@
 		border-radius: 16px;
 		}
 	  	video {
-    width: 100%;
+    width: stretch;
     height: 200px;
     object-fit: cover;
     border-radius: 16px;
@@ -105,6 +105,7 @@
 	}
 
   }
+
 
 
 
