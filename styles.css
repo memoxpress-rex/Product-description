@@ -1,5 +1,5 @@
 	html, body {
-  overflow-x: hidden; /* Hide both vertical and horizontal scrollbars */
+  overflow: hidden; /* Hide both vertical and horizontal scrollbars */
 	margin: 0px;
 			 padding: 0px;
 		height: 100vh;
@@ -12,6 +12,8 @@
     padding: 16px 16px;
     display: inline-grid;
     align-items: self-start;
+	justify-items: left;
+    text-align: left;
 	}
 	.pd-1 .pd-2 .pd-3{
 	width: fit-content;
@@ -52,6 +54,8 @@
 	    padding: 16px 16px;
 	    display: inline-grid;
 	    align-items: self-start;
+		justify-items: left;
+    	text-align: left;
 		}
 		img {
 	    width: 100%;
@@ -108,6 +112,7 @@
 	}
 
   }
+
 
 
 
