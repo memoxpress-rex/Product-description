@@ -55,7 +55,7 @@
 		}
 		img {
 	    width: 100%;
-	    height: 50%;
+	    height: 75%;
 	    object-fit: cover;
 	    border-radius: 16px;
 		}
@@ -93,6 +93,7 @@
 	}
 
   }
+
 
 
 
