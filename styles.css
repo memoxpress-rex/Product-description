@@ -13,7 +13,7 @@
     display: inline-grid;
     align-items: self-start;
 	}
-	.pd-1 .pd-2 .pd-3{
+	.pd-1 .pd-2 .pd-3 .pd-4 .pd-5 .pd-6{
 	width: fit-content;
 	}
 	.img-container{
@@ -84,7 +84,7 @@
     text-align: left;
 		}
 
-	  .pd-1, .pd-2, .pd-3{
+	  .pd-1, .pd-2, .pd-3, .pd-4, .pd-5, pd-6{
 		      display: inline-grid !important;
     justify-items: left !important;
 	  }
