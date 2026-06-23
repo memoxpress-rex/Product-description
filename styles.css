@@ -2,7 +2,7 @@
   overflow-x: hidden; /* Hide both vertical and horizontal scrollbars */
 	margin: 0px;
 			 padding: 0px;
-		height: 100vh;
+		height: 100%;
 		scrollbar-width: none;
 }
 	.pd-container{
