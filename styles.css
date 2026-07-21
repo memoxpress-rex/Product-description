@@ -4,6 +4,7 @@
 			 padding: 0px;
 		height: 100vh;
 		scrollbar-width: none;
+		font-mfamily:SF Pro Display, SF Pro Icons, Helvetica Neue, Helvetica, Arial, sans-serif;
 }
 	.pd-container{
     grid-template-columns: repeat(3, 1fr);
