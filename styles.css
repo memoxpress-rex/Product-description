@@ -88,6 +88,7 @@
 	  .pd-1, .pd-2, .pd-3, .pd-4, .pd-5, pd-6{
 		      display: inline-grid !important;
     justify-items: left !important;
+		  width: 100%;
 	  }
 
 	  	img {
