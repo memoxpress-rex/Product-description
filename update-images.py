@@ -1,39 +1,81 @@
-import csv
+import os
 import re
-import shutil
-from pathlib import Path
+import base64
+import pandas as pd
+import requests
 from collections import defaultdict
 
 # ============================================================
 # SETTINGS
 # ============================================================
 
-# Excel/CSV file
+# ------------------------------------------------------------
+# Local Excel file
+# ------------------------------------------------------------
+
 DATA_FILE = "Updating-image.xls"
 
-# Column numbers
+# ------------------------------------------------------------
+# GitHub settings
+# ------------------------------------------------------------
+
+GITHUB_OWNER = "rexbatongbakal"
+GITHUB_REPO = "PRODUCT-DESCRIPTION"
+GITHUB_BRANCH = "main"
+
+# GitHub token is read from the environment
+GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
+
+# ------------------------------------------------------------
+# Excel columns
+# ------------------------------------------------------------
+
 # Excel Column B = 2
-# Excel Column E = 5
+# Excel Column F = 6
+
 HTML_PATH_COLUMN = 2
 IMAGE_URL_COLUMN = 6
 
-# Create backups before changing HTML
-CREATE_BACKUP = True
+# ============================================================
+# SETUP
+# ============================================================
+
+if not GITHUB_TOKEN:
+    print()
+    print("❌ GITHUB_TOKEN is not set.")
+    print()
+    print("Run:")
+    print('export GITHUB_TOKEN="your_github_token"')
+    print()
+    exit(1)
 
 
 # ============================================================
-# FIND PROJECT ROOT
+# FIND LOCAL DATA FILE
 # ============================================================
 
-PROJECT_ROOT = Path(__file__).resolve().parent
-DATA_PATH = PROJECT_ROOT / DATA_FILE
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_PATH = os.path.join(SCRIPT_DIR, DATA_FILE)
 
 
 # ============================================================
-# READ CSV
+# GITHUB API
 # ============================================================
 
-def read_csv_data():
+GITHUB_API = "https://api.github.com"
+
+HEADERS = {
+    "Authorization": f"Bearer {GITHUB_TOKEN}",
+    "Accept": "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28"
+}
+
+
+# ============================================================
+# READ EXCEL
+# ============================================================
+
+def read_excel_data():
 
     products = defaultdict(list)
 
@@ -41,94 +83,238 @@ def read_csv_data():
     print("Reading:", DATA_PATH)
     print()
 
-    with open(DATA_PATH, "r", encoding="utf-8-sig", newline="") as file:
+    if not os.path.exists(DATA_PATH):
 
-        reader = csv.reader(file)
+        print("❌ Spreadsheet not found:")
+        print(DATA_PATH)
 
-        for row_number, row in enumerate(reader, start=1):
+        return products
 
-            # Skip rows that don't have enough columns
-            if len(row) < IMAGE_URL_COLUMN:
-                continue
+    try:
 
-            html_path = row[HTML_PATH_COLUMN - 1].strip()
-            image_url = row[IMAGE_URL_COLUMN - 1].strip()
+        df = pd.read_excel(
+            DATA_PATH,
+            header=None,
+            engine="xlrd"
+        )
 
-            # Skip blank rows
-            if not html_path or not image_url:
-                continue
+    except Exception as e:
 
-            # Skip header if necessary
-            if html_path.lower() in ["html", "html path", "file", "path"]:
-                continue
+        print("❌ Unable to read Excel file:")
+        print(e)
 
-            products[html_path].append(image_url)
+        return products
+
+    print("Rows found:", len(df))
+    print()
+
+    for row_number, row in df.iterrows():
+
+        # Make sure the row has enough columns
+        if len(row) < IMAGE_URL_COLUMN:
+            continue
+
+        html_path = str(
+            row.iloc[HTML_PATH_COLUMN - 1]
+        ).strip()
+
+        image_url = str(
+            row.iloc[IMAGE_URL_COLUMN - 1]
+        ).strip()
+
+        # Skip blank / NaN values
+        if html_path.lower() == "nan":
+            continue
+
+        if image_url.lower() == "nan":
+            continue
+
+        if not html_path or not image_url:
+            continue
+
+        # Skip header
+        if html_path.lower() in [
+            "html",
+            "html path",
+            "file",
+            "path"
+        ]:
+            continue
+
+        products[html_path].append(image_url)
 
     return products
 
 
 # ============================================================
-# UPDATE HTML IMAGES
+# GET FILE FROM GITHUB
 # ============================================================
 
-def update_html_file(relative_html_path, image_urls):
+def get_github_file(file_path):
 
-    html_file = PROJECT_ROOT / relative_html_path
+    url = (
+        f"{GITHUB_API}/repos/"
+        f"{GITHUB_OWNER}/"
+        f"{GITHUB_REPO}/"
+        f"contents/{file_path}"
+    )
+
+    params = {
+        "ref": GITHUB_BRANCH
+    }
+
+    response = requests.get(
+        url,
+        headers=HEADERS,
+        params=params
+    )
+
+    if response.status_code == 404:
+
+        print("❌ FILE NOT FOUND ON GITHUB")
+        print("Path:", file_path)
+
+        return None
+
+    if not response.ok:
+
+        print("❌ GitHub error:")
+        print(response.status_code)
+        print(response.text)
+
+        return None
+
+    return response.json()
+
+
+# ============================================================
+# UPDATE FILE ON GITHUB
+# ============================================================
+
+def update_github_file(
+    file_path,
+    new_content,
+    sha,
+    commit_message
+):
+
+    url = (
+        f"{GITHUB_API}/repos/"
+        f"{GITHUB_OWNER}/"
+        f"{GITHUB_REPO}/"
+        f"contents/{file_path}"
+    )
+
+    encoded_content = base64.b64encode(
+        new_content.encode("utf-8")
+    ).decode("utf-8")
+
+    payload = {
+        "message": commit_message,
+        "content": encoded_content,
+        "sha": sha,
+        "branch": GITHUB_BRANCH
+    }
+
+    response = requests.put(
+        url,
+        headers=HEADERS,
+        json=payload
+    )
+
+    if response.status_code not in [200, 201]:
+
+        print("❌ Failed to update GitHub file")
+        print(response.status_code)
+        print(response.text)
+
+        return False
+
+    return True
+
+
+# ============================================================
+# UPDATE HTML FILE
+# ============================================================
+
+def update_html_file(
+    relative_html_path,
+    image_urls
+):
 
     print("=" * 70)
     print("HTML:", relative_html_path)
     print("Images found in spreadsheet:", len(image_urls))
+    print()
 
-    # Check if HTML exists
-    if not html_file.exists():
+    # --------------------------------------------------------
+    # Get HTML from GitHub
+    # --------------------------------------------------------
 
-        print("❌ HTML FILE NOT FOUND")
-        print("Expected:", html_file)
+    github_file = get_github_file(
+        relative_html_path
+    )
+
+    if not github_file:
 
         return False
 
     # --------------------------------------------------------
-    # BACKUP
+    # Decode GitHub content
     # --------------------------------------------------------
 
-    if CREATE_BACKUP:
+    try:
 
-        backup_file = html_file.with_suffix(
-            html_file.suffix + ".backup"
-        )
+        encoded_content = github_file["content"]
 
-        shutil.copy2(html_file, backup_file)
+        html = base64.b64decode(
+            encoded_content
+        ).decode("utf-8")
 
-        print("Backup:", backup_file.name)
+    except Exception as e:
 
-    # --------------------------------------------------------
-    # READ HTML
-    # --------------------------------------------------------
+        print("❌ Unable to decode GitHub file:")
+        print(e)
 
-    html = html_file.read_text(encoding="utf-8")
+        return False
+
+    print(
+        "GitHub file found."
+    )
 
     # --------------------------------------------------------
     # FIND IMG SRC
     # --------------------------------------------------------
 
     img_pattern = re.compile(
-        r'(<img\b[^>]*?\bsrc\s*=\s*)(["\'])(.*?)(\2)',
+        r'(<img\b[^>]*?\bsrc\s*=\s*)'
+        r'(["\'])(.*?)(\2)',
         re.IGNORECASE
     )
 
-    matches = list(img_pattern.finditer(html))
+    matches = list(
+        img_pattern.finditer(html)
+    )
 
-    print("Images found in HTML:", len(matches))
+    print(
+        "Images found in HTML:",
+        len(matches)
+    )
 
+    # --------------------------------------------------------
     # No images
+    # --------------------------------------------------------
+
     if not matches:
 
-        print("❌ No <img src=\"...\"> found")
+        print(
+            "❌ No <img src=\"...\"> found"
+        )
 
         return False
 
     # --------------------------------------------------------
-    # CHECK IMAGE COUNTS
+    # CHECK COUNTS
     # --------------------------------------------------------
 
     if len(image_urls) > len(matches):
@@ -137,11 +323,13 @@ def update_html_file(relative_html_path, image_urls):
         print("⚠️ WARNING:")
         print(
             f"Excel has {len(image_urls)} images "
-            f"but HTML only has {len(matches)} <img> tags."
+            f"but HTML only has {len(matches)} "
+            f"<img> tags."
         )
 
         print(
-            "Only the available HTML <img> tags will be updated."
+            "Only available HTML <img> tags "
+            "will be updated."
         )
 
     elif len(image_urls) < len(matches):
@@ -150,21 +338,32 @@ def update_html_file(relative_html_path, image_urls):
         print("⚠️ WARNING:")
         print(
             f"Excel has {len(image_urls)} images "
-            f"but HTML has {len(matches)} <img> tags."
+            f"but HTML has {len(matches)} "
+            f"<img> tags."
         )
 
         print(
-            "The remaining HTML images will keep their existing URLs."
+            "Remaining HTML images will "
+            "keep their existing URLs."
         )
 
     # --------------------------------------------------------
     # REPLACE IMAGE URLS
     # --------------------------------------------------------
 
-    replacements = min(len(image_urls), len(matches))
+    replacements = min(
+        len(image_urls),
+        len(matches)
+    )
 
-    # Replace from bottom to top so character positions remain valid
-    for index in range(replacements - 1, -1, -1):
+    changed = False
+
+    # Bottom → top
+    for index in range(
+        replacements - 1,
+        -1,
+        -1
+    ):
 
         match = matches[index]
 
@@ -174,23 +373,77 @@ def update_html_file(relative_html_path, image_urls):
         old_url = match.group(3)
         new_url = image_urls[index]
 
-        html = html[:start] + new_url + html[end:]
+        if old_url == new_url:
+
+            print()
+            print(
+                f"Image {index + 1}: "
+                "Already correct"
+            )
+
+            continue
+
+        html = (
+            html[:start]
+            + new_url
+            + html[end:]
+        )
+
+        changed = True
 
         print()
-        print(f"Image {index + 1}")
-        print("OLD:", old_url)
-        print("NEW:", new_url)
+        print(
+            f"Image {index + 1}"
+        )
+
+        print(
+            "OLD:",
+            old_url
+        )
+
+        print(
+            "NEW:",
+            new_url
+        )
 
     # --------------------------------------------------------
-    # SAVE
+    # Nothing changed
     # --------------------------------------------------------
 
-    html_file.write_text(html, encoding="utf-8")
+    if not changed:
 
-    print()
-    print("✅ Updated:", html_file)
+        print()
+        print(
+            "ℹ️ No changes required."
+        )
 
-    return True
+        return True
+
+    # --------------------------------------------------------
+    # Update GitHub
+    # --------------------------------------------------------
+
+    commit_message = (
+        f"Update images for {relative_html_path}"
+    )
+
+    success = update_github_file(
+        relative_html_path,
+        html,
+        github_file["sha"],
+        commit_message
+    )
+
+    if success:
+
+        print()
+        print(
+            "✅ Successfully updated on GitHub"
+        )
+
+        return True
+
+    return False
 
 
 # ============================================================
@@ -201,31 +454,48 @@ def main():
 
     print()
     print("==============================================")
-    print("   PRODUCT IMAGE URL UPDATER")
+    print("      PRODUCT IMAGE URL UPDATER")
     print("==============================================")
+    print()
 
-    if not DATA_PATH.exists():
+    print(
+        "GitHub repository:",
+        f"{GITHUB_OWNER}/{GITHUB_REPO}"
+    )
 
-        print()
-        print("❌ Spreadsheet not found:")
-        print(DATA_PATH)
-        print()
+    print(
+        "Branch:",
+        GITHUB_BRANCH
+    )
 
-        return
+    print()
 
-    products = read_csv_data()
+    # --------------------------------------------------------
+    # Read Excel
+    # --------------------------------------------------------
+
+    products = read_excel_data()
 
     if not products:
 
         print()
-        print("❌ No valid product data found.")
-        print()
+        print(
+            "❌ No valid product data found."
+        )
 
         return
 
     print()
-    print("HTML files found:", len(products))
+    print(
+        "HTML files found:",
+        len(products)
+    )
+
     print()
+
+    # --------------------------------------------------------
+    # Process files
+    # --------------------------------------------------------
 
     success = 0
     failed = 0
@@ -238,19 +508,39 @@ def main():
         )
 
         if result:
+
             success += 1
+
         else:
+
             failed += 1
 
+    # --------------------------------------------------------
+    # Summary
+    # --------------------------------------------------------
+
     print()
     print("==============================================")
-    print("              COMPLETE")
+    print("                 COMPLETE")
     print("==============================================")
-    print()
-    print("Successfully updated:", success)
-    print("Failed:", failed)
     print()
 
+    print(
+        "Successfully updated:",
+        success
+    )
+
+    print(
+        "Failed:",
+        failed
+    )
+
+    print()
+
+
+# ============================================================
+# RUN
+# ============================================================
 
 if __name__ == "__main__":
     main()
