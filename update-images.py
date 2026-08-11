@@ -15,7 +15,7 @@ DATA_FILE = "Updating-image.xls"
 # Excel Column B = 2
 # Excel Column E = 5
 HTML_PATH_COLUMN = 2
-IMAGE_URL_COLUMN = 5
+IMAGE_URL_COLUMN = 6
 
 # Create backups before changing HTML
 CREATE_BACKUP = True
